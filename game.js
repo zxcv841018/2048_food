@@ -69,18 +69,18 @@ function addRandomTile(grid) {
 
 // ── Pixel Sprite Renderer ─────────────────────────────────────────────────────
 
-function drawSprite(canvas, food, displaySize) {
+function drawSprite(canvas, food) {
   const dpr = window.devicePixelRatio || 1;
-  const px = Math.round(displaySize * dpr);
-  canvas.width = px;
-  canvas.height = px;
-  canvas.style.width  = displaySize + 'px';
-  canvas.style.height = displaySize + 'px';
+  // 160 = 16 art-pixels × 10; gives integer pixel mapping at common DPR values.
+  // At 3× DPR: 480 canvas pixels → each art-pixel = 30 physical pixels.
+  const size = Math.round(160 * dpr);
+  canvas.width  = size;
+  canvas.height = size;
+  // CSS width/height come from the .sprite class (68% of cell); no inline override.
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, px, px);
-  // Each of the 16×16 art pixels maps to (px/16) physical pixels
-  const dot = px / 16;
+  ctx.clearRect(0, 0, size, size);
+  const dot = size / 16;
   food.px.forEach((row, r) => {
     for (let c = 0; c < 16; c++) {
       const ch = row[c];
@@ -200,24 +200,25 @@ function render() {
     cell.style.backgroundColor = food.bg;
     cell.dataset.val = val;
 
-    // Pixel sprite
+    // Absolutely-positioned inner wrapper so it never stretches the cell
+    const inner = document.createElement('div');
+    inner.className = 'cell-inner';
+
     const canvas = document.createElement('canvas');
     canvas.className = 'sprite';
-    // Derive cell size from the actual rendered cell element
-    const cellSize = cell.clientWidth > 0 ? cell.clientWidth : Math.floor((board.clientWidth - 5 * 8) / 4) || 80;
-    const spriteSize = Math.floor(cellSize * 0.70);
-    drawSprite(canvas, food, spriteSize);
-    cell.appendChild(canvas);
+    drawSprite(canvas, food);
+    inner.appendChild(canvas);
 
     const label = document.createElement('div');
     label.className = 'cell-label';
     label.textContent = food.name;
-    cell.appendChild(label);
+    inner.appendChild(label);
+
+    cell.appendChild(inner);
 
     if (prev === 0) {
       cell.classList.add('tile-new');
-    } else if (val === prev + 1 && val > prev) {
-      // merged from previous move - check if this position had a merge
+    } else if (val === prev + 1) {
       cell.classList.add('tile-merge');
     }
 
@@ -237,7 +238,7 @@ function render() {
     : '頂級盛宴達成！';
 
   const nc = $('next-target-canvas');
-  drawSprite(nc, nextFood, 32);
+  drawSprite(nc, nextFood);
 
   // Overlay
   const overlay = $('overlay');
@@ -282,7 +283,7 @@ function openHelp() {
     item.className = 'help-food-item';
 
     const canvas = document.createElement('canvas');
-    drawSprite(canvas, food, 40);
+    drawSprite(canvas, food);
     item.appendChild(canvas);
 
     const name = document.createElement('div');
