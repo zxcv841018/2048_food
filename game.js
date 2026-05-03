@@ -81,7 +81,8 @@ function _spriteDisplaySize() {
   if (!_cachedBoardW) return 56; // safe fallback before first layout
   // board: padding 8px each side, gap 8px × 3 between 4 cells
   const cellW = (_cachedBoardW - 16 - 24) / 4;
-  return Math.max(24, Math.floor(cellW * 0.68));
+  // 62 % of cell: leaves room for the label pinned at bottom without overlap
+  return Math.max(24, Math.floor(cellW * 0.62));
 }
 
 function drawSprite(canvas, food) {
@@ -219,21 +220,17 @@ function render() {
     cell.style.backgroundColor = food.bg;
     cell.dataset.val = val;
 
-    // Absolutely-positioned inner wrapper so it never stretches the cell
-    const inner = document.createElement('div');
-    inner.className = 'cell-inner';
-
+    // Sprite: absolutely centred by CSS (top:50% left:50% translate -50%)
     const canvas = document.createElement('canvas');
     canvas.className = 'sprite';
     drawSprite(canvas, food);
-    inner.appendChild(canvas);
+    cell.appendChild(canvas);
 
+    // Label: absolutely pinned to bottom edge by CSS
     const label = document.createElement('div');
     label.className = 'cell-label';
     label.textContent = food.name;
-    inner.appendChild(label);
-
-    cell.appendChild(inner);
+    cell.appendChild(label);
 
     if (prev === 0) {
       cell.classList.add('tile-new');

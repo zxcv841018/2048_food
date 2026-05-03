@@ -161,43 +161,38 @@ header {
   background: #f0e4c0;
   border-radius: 12px;
   box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
-  /* Size is driven by column-width + aspect-ratio, NOT by content */
   aspect-ratio: 1;
   position: relative;
   overflow: hidden;
   transition: background-color 110ms ease;
 }
 
-/* Content floats inside; can never stretch the cell */
-.cell-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Sprite: always centred in the cell, independent of label */
 .sprite {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  /* width/height are set explicitly by drawSprite() in JS */
   display: block;
-  flex-shrink: 0;
 }
 
+/* Label: pinned to the bottom edge, never competes with sprite height */
 .cell-label {
-  font-size: 0.55rem;
+  position: absolute;
+  bottom: 3px;
+  left: 0;
+  right: 0;
+  font-size: 0.5rem;
   font-weight: 700;
   color: #7a4808;
   text-align: center;
   line-height: 1;
-  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
-  max-width: 90%;
   text-overflow: ellipsis;
-  flex-shrink: 0;
+  pointer-events: none;
 }
 
 /* Tile animations */
