@@ -80,7 +80,7 @@ function drawSprite(canvas, food) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, size, size);
-  const dot = size / 16;
+  const dot = size / 32;
   food.px.forEach((row, r) => {
     for (let c = 0; c < 16; c++) {
       const ch = row[c];
