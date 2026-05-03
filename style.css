@@ -148,6 +148,7 @@ header {
 #board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   gap: 8px;
   background: #d4a020;
   border-radius: 18px;
@@ -167,6 +168,9 @@ header {
   position: relative;
   overflow: hidden;
   transition: background-color 110ms ease;
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
 }
 
 .sprite {
@@ -176,13 +180,16 @@ header {
 }
 
 .cell-label {
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   font-weight: 700;
   color: #7a4808;
   text-align: center;
   line-height: 1;
-  margin-top: 2px;
+  margin-top: 1px;
   white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
 }
 
 /* Tile animations */

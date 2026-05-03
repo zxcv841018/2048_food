@@ -69,20 +69,25 @@ function addRandomTile(grid) {
 
 // ── Pixel Sprite Renderer ─────────────────────────────────────────────────────
 
-function drawSprite(canvas, food, size) {
-  canvas.width = size;
-  canvas.height = size;
+function drawSprite(canvas, food, displaySize) {
+  const dpr = window.devicePixelRatio || 1;
+  const px = Math.round(displaySize * dpr);
+  canvas.width = px;
+  canvas.height = px;
+  canvas.style.width  = displaySize + 'px';
+  canvas.style.height = displaySize + 'px';
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, size, size);
-  const pixSize = size / 16;
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, px, px);
+  // Each of the 16×16 art pixels maps to (px/16) physical pixels
+  const dot = px / 16;
   food.px.forEach((row, r) => {
     for (let c = 0; c < 16; c++) {
       const ch = row[c];
       if (ch === '0') continue;
-      const palIdx = parseInt(ch) - 1;
-      ctx.fillStyle = food.pal[palIdx] || '#000';
-      ctx.fillRect(Math.floor(c * pixSize), Math.floor(r * pixSize),
-                   Math.ceil(pixSize), Math.ceil(pixSize));
+      ctx.fillStyle = food.pal[parseInt(ch) - 1] || '#000';
+      ctx.fillRect(Math.round(c * dot), Math.round(r * dot),
+                   Math.ceil(dot), Math.ceil(dot));
     }
   });
 }
@@ -198,10 +203,9 @@ function render() {
     // Pixel sprite
     const canvas = document.createElement('canvas');
     canvas.className = 'sprite';
-    const cellSize = board.clientWidth > 0
-      ? Math.floor((board.clientWidth - 5 * 8) / 4)
-      : 80;
-    const spriteSize = Math.floor(cellSize * 0.62);
+    // Derive cell size from the actual rendered cell element
+    const cellSize = cell.clientWidth > 0 ? cell.clientWidth : Math.floor((board.clientWidth - 5 * 8) / 4) || 80;
+    const spriteSize = Math.floor(cellSize * 0.70);
     drawSprite(canvas, food, spriteSize);
     cell.appendChild(canvas);
 
