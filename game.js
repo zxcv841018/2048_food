@@ -69,20 +69,39 @@ function addRandomTile(grid) {
 
 // ── Pixel Sprite Renderer ─────────────────────────────────────────────────────
 
+// Cached board width so we only reflow once per render cycle.
+let _cachedBoardW = 0;
+window.addEventListener('resize', () => { _cachedBoardW = 0; });
+
+function _spriteDisplaySize() {
+  if (!_cachedBoardW) {
+    const b = $('board');
+    _cachedBoardW = b ? (b.getBoundingClientRect().width || b.offsetWidth) : 0;
+  }
+  if (!_cachedBoardW) return 56; // safe fallback before first layout
+  // board: padding 8px each side, gap 8px × 3 between 4 cells
+  const cellW = (_cachedBoardW - 16 - 24) / 4;
+  return Math.max(24, Math.floor(cellW * 0.68));
+}
+
 function drawSprite(canvas, food) {
-  const dpr = window.devicePixelRatio || 1;
-  // 160 = 16 art-pixels × 10; gives integer pixel mapping at common DPR values.
-  // At 3× DPR: 480 canvas pixels → each art-pixel = 30 physical pixels.
-  const size = Math.round(160 * dpr);
-  canvas.width  = size;
-  canvas.height = size;
-  // CSS width/height come from the .sprite class (68% of cell); no inline override.
+  const dpr  = window.devicePixelRatio || 1;
+  const disp = _spriteDisplaySize();          // CSS display pixels
+  const phys = Math.round(disp * dpr);        // canvas buffer pixels
+
+  // Set CSS display size explicitly — never rely on CSS aspect-ratio for canvas
+  // because Safari can ignore it when canvas.width/height attributes are set.
+  canvas.style.width  = disp + 'px';
+  canvas.style.height = disp + 'px';
+  canvas.width  = phys;
+  canvas.height = phys;
+
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, size, size);
-  const dot = size / 32;
+  ctx.clearRect(0, 0, phys, phys);
+  const dot = phys / 32;
   food.px.forEach((row, r) => {
-    for (let c = 0; c < 16; c++) {
+    for (let c = 0; c < 32; c++) {          // 32-col art grid
       const ch = row[c];
       if (ch === '0') continue;
       ctx.fillStyle = food.pal[parseInt(ch) - 1] || '#000';
@@ -352,5 +371,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  newGame();
+  // Defer to next frame so CSS layout is computed and getBoundingClientRect works.
+  requestAnimationFrame(() => newGame());
 });

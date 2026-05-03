@@ -181,9 +181,7 @@ header {
 .sprite {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  /* CSS drives display size; canvas resolution is set separately in JS */
-  width: 68%;
-  aspect-ratio: 1;
+  /* width/height are set explicitly by drawSprite() in JS */
   display: block;
   flex-shrink: 0;
 }
