@@ -100,9 +100,10 @@ function drawSprite(canvas, food) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, phys, phys);
-  const dot = phys / 32;
+  const GRID = food.px[0].length;  // 64 for new sprites
+  const dot = phys / GRID;
   food.px.forEach((row, r) => {
-    for (let c = 0; c < 32; c++) {          // 32-col art grid
+    for (let c = 0; c < GRID; c++) {
       const ch = row[c];
       if (ch === '0') continue;
       ctx.fillStyle = food.pal[parseInt(ch) - 1] || '#000';
