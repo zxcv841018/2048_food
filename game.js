@@ -67,7 +67,7 @@ function addRandomTile(grid) {
   return ng;
 }
 
-// ── Pixel Sprite Renderer ─────────────────────────────────────────────────────
+// ── Sprite Renderer ───────────────────────────────────────────────────────────
 
 // Cached board width so we only reflow once per render cycle.
 let _cachedBoardW = 0;
@@ -85,32 +85,41 @@ function _spriteDisplaySize() {
   return Math.max(24, Math.floor(cellW * 0.62));
 }
 
+const _imgCache = {};
+
+function _getImg(src) {
+  if (!_imgCache[src]) {
+    const img = new Image();
+    img.src = src;
+    _imgCache[src] = img;
+  }
+  return _imgCache[src];
+}
+
 function drawSprite(canvas, food) {
   const dpr  = window.devicePixelRatio || 1;
-  const disp = _spriteDisplaySize();          // CSS display pixels
-  const phys = Math.round(disp * dpr);        // canvas buffer pixels
+  const disp = _spriteDisplaySize();
+  const phys = Math.round(disp * dpr);
 
-  // Set CSS display size explicitly — never rely on CSS aspect-ratio for canvas
-  // because Safari can ignore it when canvas.width/height attributes are set.
   canvas.style.width  = disp + 'px';
   canvas.style.height = disp + 'px';
   canvas.width  = phys;
   canvas.height = phys;
 
   const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.clearRect(0, 0, phys, phys);
-  const GRID = food.px[0].length;  // 64 for new sprites
-  const dot = phys / GRID;
-  food.px.forEach((row, r) => {
-    for (let c = 0; c < GRID; c++) {
-      const ch = row[c];
-      if (ch === '0') continue;
-      ctx.fillStyle = food.pal[parseInt(ch) - 1] || '#000';
-      ctx.fillRect(Math.round(c * dot), Math.round(r * dot),
-                   Math.ceil(dot), Math.ceil(dot));
-    }
-  });
+
+  const img = _getImg(food.img);
+  if (img.complete && img.naturalWidth > 0) {
+    ctx.drawImage(img, 0, 0, phys, phys);
+  } else {
+    img.addEventListener('load', () => {
+      ctx.clearRect(0, 0, phys, phys);
+      ctx.drawImage(img, 0, 0, phys, phys);
+    }, { once: true });
+  }
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -352,6 +361,9 @@ document.addEventListener('touchend', e => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Preload all sprites so they're ready before first render
+  FOODS.forEach(f => _getImg(f.img));
+
   $('btn-new').addEventListener('click', newGame);
   $('btn-undo').addEventListener('click', undo);
   $('btn-help').addEventListener('click', openHelp);
