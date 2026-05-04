@@ -340,29 +340,39 @@ document.addEventListener('keydown', e => {
 });
 
 let touchStart = null;
-document.addEventListener('touchstart', e => {
-  touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
 
-document.addEventListener('touchend', e => {
-  if (!touchStart) return;
-  const dx = e.changedTouches[0].clientX - touchStart.x;
-  const dy = e.changedTouches[0].clientY - touchStart.y;
-  const minDist = 20;
-  if (Math.abs(dx) < minDist && Math.abs(dy) < minDist) return;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    move(dx > 0 ? 'right' : 'left');
-  } else {
-    move(dy > 0 ? 'down' : 'up');
-  }
-  touchStart = null;
-}, { passive: true });
+function _initBoardTouch(board) {
+  board.addEventListener('touchstart', e => {
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+
+  board.addEventListener('touchmove', e => {
+    e.preventDefault(); // block page scroll while swiping on the board
+  }, { passive: false });
+
+  board.addEventListener('touchend', e => {
+    if (!touchStart) return;
+    const dx = e.changedTouches[0].clientX - touchStart.x;
+    const dy = e.changedTouches[0].clientY - touchStart.y;
+    const minDist = 20;
+    touchStart = null;
+    if (Math.abs(dx) < minDist && Math.abs(dy) < minDist) return;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      move(dx > 0 ? 'right' : 'left');
+    } else {
+      move(dy > 0 ? 'down' : 'up');
+    }
+  }, { passive: true });
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', () => {
   // Preload all sprites so they're ready before first render
   FOODS.forEach(f => _getImg(f.img));
+
+  // Attach touch handlers to board only, so swipes don't scroll the page
+  _initBoardTouch($('board'));
 
   $('btn-new').addEventListener('click', newGame);
   $('btn-undo').addEventListener('click', undo);
